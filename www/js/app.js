@@ -174,40 +174,12 @@ function getCombustivelSelecionado() {
 
 async function salvarPDF(blob, dados) {
     try {
-        // Verificar se o plugin Filesystem está disponível
-        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Filesystem) {
-            const { Filesystem } = window.Capacitor.Plugins;
-            
-            const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-            const nomeArquivo = `FR_${dados.numero || 'sem_numero'}_${timestamp}.pdf`;
-            
-            // Converter blob para base64
-            const reader = new FileReader();
-            reader.onloadend = async () => {
-                const base64 = reader.result.split(',')[1];
-                try {
-                    await Filesystem.writeFile({
-                        path: nomeArquivo,
-                        data: base64,
-                        directory: Filesystem.Directory.Documents,
-                        encoding: Filesystem.Encoding.UTF8,
-                    });
-                    console.log('PDF salvo em:', nomeArquivo);
-                    mostrarStatus('PDF salvo em: Documentos/' + nomeArquivo, 'success');
-                } catch (e) {
-                    console.log('Salvamento via Filesystem falhou:', e);
-                    mostrarStatus('Erro ao salvar: ' + e.message, 'error');
-                    baixarPDF(blob, nomeArquivo);
-                }
-            };
-            reader.readAsDataURL(blob);
-        } else {
-            // Fallback: download via navegador/WebView
-            baixarPDF(blob, `FR_${dados.numero || 'sem_numero'}.pdf`);
-        }
+        // Fallback: download via navegador/WebView (salva na pasta Downloads do Android)
+        baixarPDF(blob, `FR_${dados.numero || 'sem_numero'}.pdf`);
+        mostrarStatus('PDF baixado na pasta Downloads', 'success');
     } catch (e) {
         console.error('Erro ao salvar PDF:', e);
-        baixarPDF(blob, `FR_${dados.numero || 'sem_numero'}.pdf`);
+        mostrarStatus('Erro ao baixar PDF: ' + e.message, 'error');
     }
 }
 
