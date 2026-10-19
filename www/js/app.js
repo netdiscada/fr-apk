@@ -125,7 +125,7 @@ function gerarPDF() {
                 x: pos.x,
                 y: pos.y,
                 size: 9,
-                color: rgb(0, 0, 0),
+                color: PDFLib.rgb(0, 0, 0),
             });
         });
         
@@ -138,7 +138,7 @@ function gerarPDF() {
                 x: pos.x,
                 y: pos.y,
                 size: 9,
-                color: rgb(0, 0, 0),
+                color: PDFLib.rgb(0, 0, 0),
             });
         }
         
@@ -243,7 +243,4 @@ function mostrarStatus(msg, tipo) {
     setTimeout(() => { el.style.display = 'none'; }, 4000);
 }
 
-// Função auxiliar para cor RGB
-function rgb(r, g, b) {
-    return { r: r/255, g: g/255, b: b/255 };
-}
+// Função auxiliar para cor RGB (usa PDFLib.rgb)
