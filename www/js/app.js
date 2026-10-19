@@ -174,32 +174,39 @@ function getCombustivelSelecionado() {
 
 async function salvarPDF(blob, dados) {
     try {
-        // Tentar usar o plugin de sistema de arquivos do Capacitor
-        const { Filesystem } = window.Capacitor.Plugins;
-        
-        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-        const nomeArquivo = `FR_${dados.numero || 'sem_numero'}_${timestamp}.pdf`;
-        
-        // Converter blob para base64
-        const reader = new FileReader();
-        reader.onloadend = async () => {
-            const base64 = reader.result.split(',')[1];
-            try {
-                await Filesystem.writeFile({
-                    path: nomeArquivo,
-                    data: base64,
-                    directory: Filesystem.Directory.Documents,
-                    encoding: Filesystem.Encoding.UTF8,
-                });
-                console.log('PDF salvo em:', nomeArquivo);
-            } catch (e) {
-                console.log('Salvamento via Filesystem falhou, baixando:', e);
-                baixarPDF(blob, nomeArquivo);
-            }
-        };
-        reader.readAsDataURL(blob);
+        // Verificar se o plugin Filesystem está disponível
+        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Filesystem) {
+            const { Filesystem } = window.Capacitor.Plugins;
+            
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+            const nomeArquivo = `FR_${dados.numero || 'sem_numero'}_${timestamp}.pdf`;
+            
+            // Converter blob para base64
+            const reader = new FileReader();
+            reader.onloadend = async () => {
+                const base64 = reader.result.split(',')[1];
+                try {
+                    await Filesystem.writeFile({
+                        path: nomeArquivo,
+                        data: base64,
+                        directory: Filesystem.Directory.Documents,
+                        encoding: Filesystem.Encoding.UTF8,
+                    });
+                    console.log('PDF salvo em:', nomeArquivo);
+                    mostrarStatus('PDF salvo em: Documentos/' + nomeArquivo, 'success');
+                } catch (e) {
+                    console.log('Salvamento via Filesystem falhou:', e);
+                    mostrarStatus('Erro ao salvar: ' + e.message, 'error');
+                    baixarPDF(blob, nomeArquivo);
+                }
+            };
+            reader.readAsDataURL(blob);
+        } else {
+            // Fallback: download via navegador/WebView
+            baixarPDF(blob, `FR_${dados.numero || 'sem_numero'}.pdf`);
+        }
     } catch (e) {
-        // Fallback: download via navegador/WebView
+        console.error('Erro ao salvar PDF:', e);
         baixarPDF(blob, `FR_${dados.numero || 'sem_numero'}.pdf`);
     }
 }
