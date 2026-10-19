@@ -174,40 +174,63 @@ function getCombustivelSelecionado() {
 
 async function salvarPDF(blob, dados) {
     try {
-        // Verificar se o plugin Filesystem está disponível (instalado nativamente via Capacitor)
-        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Filesystem) {
-            const { Filesystem } = window.Capacitor.Plugins;
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        const nomeArquivo = `FR_${dados.numero || 'sem_numero'}_${timestamp}.pdf`;
+        
+        // Converter blob para base64
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            const base64 = reader.result.split(',')[1];
+            const dataUrl = 'data:application/pdf;base64,' + base64;
             
-            const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-            const nomeArquivo = `FR_${dados.numero || 'sem_numero'}_${timestamp}.pdf`;
-            
-            // Converter blob para base64
-            const reader = new FileReader();
-            reader.onloadend = async () => {
-                const base64 = reader.result.split(',')[1];
-                try {
-                    await Filesystem.writeFile({
-                        path: nomeArquivo,
-                        data: base64,
-                        directory: Filesystem.Directory.Documents,
-                        encoding: Filesystem.Encoding.UTF8,
-                    });
-                    console.log('PDF salvo em:', nomeArquivo);
+            // Tentar salvar via Capacitor Filesystem (se disponível)
+            if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Filesystem) {
+                const { Filesystem } = window.Capacitor.Plugins;
+                const dir = Filesystem.Directory ? Filesystem.Directory.Documents : 'DOCUMENTS';
+                
+                Filesystem.writeFile({
+                    path: nomeArquivo,
+                    data: base64,
+                    directory: dir,
+                    encoding: Filesystem.Encoding.UTF8,
+                }).then(() => {
                     mostrarStatus('PDF salvo em: Documentos/' + nomeArquivo, 'success');
-                } catch (e) {
-                    console.log('Salvamento via Filesystem falhou:', e);
-                    mostrarStatus('Erro ao salvar: ' + e.message, 'error');
-                    baixarPDF(blob, nomeArquivo);
-                }
-            };
-            reader.readAsDataURL(blob);
-        } else {
-            // Fallback: tentar download direto (pode não funcionar em WebView Android)
-            baixarPDF(blob, `FR_${dados.numero || 'sem_numero'}.pdf`);
-        }
+                }).catch((e) => {
+                    console.log('Filesystem falhou, tentando download direto:', e);
+                    abrirPDFNoNavegador(dataUrl, nomeArquivo);
+                });
+            } else {
+                abrirPDFNoNavegador(dataUrl, nomeArquivo);
+            }
+        };
+        reader.readAsDataURL(blob);
     } catch (e) {
         console.error('Erro ao salvar PDF:', e);
-        baixarPDF(blob, `FR_${dados.numero || 'sem_numero'}.pdf`);
+        mostrarStatus('Erro ao gerar PDF: ' + e.message, 'error');
+    }
+}
+
+function abrirPDFNoNavegador(dataUrl, nomeArquivo) {
+    try {
+        // Abrir o PDF em uma nova aba/janela do WebView
+        const win = window.open(dataUrl, '_blank');
+        if (win) {
+            mostrarStatus('PDF aberto. Use o menu para salvar/imprimir.', 'success');
+        } else {
+            // Se window.open for bloqueado, tentar navegar na mesma aba
+            window.location.href = dataUrl;
+            mostrarStatus('PDF gerado. Verifique o navegador para salvar.', 'success');
+        }
+    } catch (e) {
+        console.error('Erro ao abrir PDF:', e);
+        // Último recurso: tentar download direto
+        const a = document.createElement('a');
+        a.href = dataUrl;
+        a.download = nomeArquivo;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        mostrarStatus('PDF gerado. Verifique a pasta Downloads.', 'success');
     }
 }
 
