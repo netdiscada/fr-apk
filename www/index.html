@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>FR - Sistema</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f5f5; color: #333; line-height: 1.6; padding: 15px; }
+        header { background: #1a3a5c; color: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+        header h1 { font-size: 1.3rem; margin-bottom: 5px; }
+        header p { opacity: 0.9; font-size: 0.85rem; }
+
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .card h2 { color: #1a3a5c; margin-bottom: 15px; font-size: 1.1rem; border-bottom: 2px solid #e8e8e8; padding-bottom: 8px; }
+
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; }
+
+        .field { margin-bottom: 12px; }
+        .field label { display: block; font-size: 0.8rem; font-weight: 600; color: #555; margin-bottom: 5px; text-transform: uppercase; }
+        .field input, .field textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 1rem; font-family: inherit; }
+        .field input:focus, .field textarea:focus { outline: none; border-color: #1a3a5c; }
+
+        .checkbox-row { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 5px; }
+        .checkbox-item { display: flex; align-items: center; gap: 6px; font-size: 0.85rem; }
+        .checkbox-item input { width: auto; }
+
+        textarea { min-height: 80px; resize: vertical; }
+
+        .btn { background: #1a3a5c; color: white; border: none; padding: 14px; font-size: 1rem; font-weight: 600; border-radius: 6px; cursor: pointer; width: 100%; margin-top: 10px; }
+        .btn:hover { background: #152f4a; }
+        .btn:active { transform: scale(0.98); }
+        .btn.secondary { background: #6c757d; }
+        .btn.secondary:hover { background: #5a6268; }
+
+        .status { margin-top: 10px; padding: 10px; border-radius: 6px; display: none; font-size: 0.85rem; }
+        .status.success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .status.error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+
+        @media (max-width: 600px) {
+            .grid-2, .grid-3 { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>📋 FR - Sistema</h1>
+        <p>Ficha e Relatório Diário - SMSUZ Mogi das Cruzes/SP</p>
+    </header>
+
+    <div class="card">
+        <h2>🚗 Dados do Veículo</h2>
+        <div class="grid-3">
+            <div class="field">
+                <label>Número</label>
+                <input type="text" id="numero" placeholder="Nº do veículo">
+            </div>
+            <div class="field">
+                <label>Marca</label>
+                <input type="text" id="marca" placeholder="Marca">
+            </div>
+            <div class="field">
+                <label>Tombamento</label>
+                <input type="text" id="tombamento" placeholder="Tombo">
+            </div>
+            <div class="field">
+                <label>Modelo</label>
+                <input type="text" id="modelo" placeholder="Modelo">
+            </div>
+            <div class="field">
+                <label>Placa</label>
+                <input type="text" id="placa" placeholder="ABC-1234">
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>👤 Condutor</h2>
+        <div class="grid-3">
+            <div class="field">
+                <label>Nome do Condutor</label>
+                <input type="text" id="condutor" placeholder="Nome completo">
+            </div>
+            <div class="field">
+                <label>Cargo / Função</label>
+                <input type="text" id="cargo" placeholder="Motorista">
+            </div>
+            <div class="field">
+                <label>Unidade</label>
+                <input type="text" id="unidade" value="SMSUZ">
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>⛽ Combustível</h2>
+        <p style="font-size: 0.85rem; color: #666; margin-bottom: 10px;">Marque o nível do tanque:</p>
+        <div class="checkbox-row">
+            <label class="checkbox-item">
+                <input type="checkbox" name="combustivel" value="cheio"> Cheio
+            </label>
+            <label class="checkbox-item">
+                <input type="checkbox" name="combustivel" value="3_4"> 3/4
+            </label>
+            <label class="checkbox-item">
+                <input type="checkbox" name="combustivel" value="1_2"> 1/2
+            </label>
+            <label class="checkbox-item">
+                <input type="checkbox" name="combustivel" value="1_4"> 1/4
+            </label>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>📍 Horários e Quilometragem</h2>
+        <div class="grid-2">
+            <div class="field">
+                <label>Partida (km / Hod.)</label>
+                <input type="text" id="partida_km" placeholder="00000">
+            </div>
+            <div class="field">
+                <label>Partida - Horário</label>
+                <input type="text" id="partida_hora" placeholder="00:00">
+            </div>
+            <div class="field">
+                <label>Portaria</label>
+                <input type="text" id="portaria" placeholder="Portaria">
+            </div>
+            <div class="field">
+                <label>Retorno (km / Hod.)</label>
+                <input type="text" id="retorno_km" placeholder="00000">
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>📝 Descrição dos Serviços</h2>
+        <div class="field">
+            <label>Descrição resumida dos serviços</label>
+            <textarea id="descricao" placeholder="Descreva os serviços..."></textarea>
+        </div>
+        <div class="field" style="margin-top: 10px;">
+            <label>Local(is) de atendimento</label>
+            <input type="text" id="locais" placeholder="Locais">
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>🗺️ Itinerário (Página 2)</h2>
+        <div class="grid-2">
+            <div class="field">
+                <label>Saída - km / Hod.</label>
+                <input type="text" id="saida_km" placeholder="00000">
+            </div>
+            <div class="field">
+                <label>Saída - Horário</label>
+                <input type="text" id="saida_hora" placeholder="00:00">
+            </div>
+            <div class="field">
+                <label>Itinerário</label>
+                <input type="text" id="itinerario" placeholder="Rota / destino">
+            </div>
+            <div class="field">
+                <label>Chegada - km / Hod.</label>
+                <input type="text" id="chegada_km" placeholder="00000">
+            </div>
+            <div class="field">
+                <label>Chegada - Horário</label>
+                <input type="text" id="chegada_hora" placeholder="00:00">
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>✍️ Assinatura e Data</h2>
+        <div class="grid-2">
+            <div class="field">
+                <label>Data</label>
+                <input type="text" id="data">
+            </div>
+            <div class="field">
+                <label>Assinatura do Condutor</label>
+                <input type="text" id="assinatura" placeholder="Preencha após impressão">
+            </div>
+        </div>
+        <p style="font-size: 0.75rem; color: #666; margin-top: 8px;">A assinatura é feita manualmente após imprimir o PDF.</p>
+    </div>
+
+    <button class="btn" onclick="gerarPDF()">📄 Gerar PDF Preenchido</button>
+    <button class="btn secondary" onclick="limparForm()">🗑️ Limpar Formulário</button>
+
+    <div id="status" class="status"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        // Preencher data atual automaticamente
+        const hoje = new Date();
+        const dia = String(hoje.getDate()).padStart(2, '0');
+        const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+        const ano = hoje.getFullYear();
+        document.getElementById('data').value = `${dia}/${mes}/${ano}`;
+    </script>
+</body>
+</html>
