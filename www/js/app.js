@@ -142,15 +142,32 @@ function gerarPDF() {
             });
         }
         
-        // Salvar o PDF
+        // Gerar o PDF e abrir para impressão/compartilhamento
         pdfDoc.save().then(async (pdfBytes) => {
             const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-            const url = URL.createObjectURL(blob);
-            
-            // Salvar no dispositivo
-            salvarPDF(blob, dados);
-            
-            mostrarStatus('PDF gerado com sucesso!', 'success');
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                const dataUrl = reader.result;
+                const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+                const nomeArquivo = `FR_${dados.numero || 'sem_numero'}_${timestamp}.pdf`;
+                
+                // Abrir o PDF em nova aba para o usuário imprimir/compartilhar
+                try {
+                    const win = window.open(dataUrl, '_blank');
+                    if (win) {
+                        win.document.title = nomeArquivo;
+                        mostrarStatus('PDF aberto. Use o menu do navegador para Imprimir ou Compartilhar.', 'success');
+                    } else {
+                        // Se bloqueado, navegar na mesma aba
+                        window.location.href = dataUrl;
+                        mostrarStatus('PDF gerado. Use o menu do navegador para Imprimir ou Salvar.', 'success');
+                    }
+                } catch (e) {
+                    console.error('Erro ao abrir PDF:', e);
+                    mostrarStatus('Erro ao abrir PDF: ' + e.message, 'error');
+                }
+            };
+            reader.readAsDataURL(blob);
         });
         
     } catch (err) {
@@ -172,78 +189,8 @@ function getCombustivelSelecionado() {
     return null;
 }
 
-async function salvarPDF(blob, dados) {
-    try {
-        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-        const nomeArquivo = `FR_${dados.numero || 'sem_numero'}_${timestamp}.pdf`;
-        
-        // Converter blob para base64
-        const reader = new FileReader();
-        reader.onloadend = () => {
-            const base64 = reader.result.split(',')[1];
-            const dataUrl = 'data:application/pdf;base64,' + base64;
-            
-            // Tentar salvar via Capacitor Filesystem (se disponível)
-            if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Filesystem) {
-                const { Filesystem } = window.Capacitor.Plugins;
-                const dir = Filesystem.Directory ? Filesystem.Directory.Documents : 'DOCUMENTS';
-                
-                Filesystem.writeFile({
-                    path: nomeArquivo,
-                    data: base64,
-                    directory: dir,
-                    encoding: Filesystem.Encoding.UTF8,
-                }).then(() => {
-                    mostrarStatus('PDF salvo em: Documentos/' + nomeArquivo, 'success');
-                }).catch((e) => {
-                    console.log('Filesystem falhou, tentando download direto:', e);
-                    abrirPDFNoNavegador(dataUrl, nomeArquivo);
-                });
-            } else {
-                abrirPDFNoNavegador(dataUrl, nomeArquivo);
-            }
-        };
-        reader.readAsDataURL(blob);
-    } catch (e) {
-        console.error('Erro ao salvar PDF:', e);
-        mostrarStatus('Erro ao gerar PDF: ' + e.message, 'error');
-    }
-}
-
-function abrirPDFNoNavegador(dataUrl, nomeArquivo) {
-    try {
-        // Abrir o PDF em uma nova aba/janela do WebView
-        const win = window.open(dataUrl, '_blank');
-        if (win) {
-            mostrarStatus('PDF aberto. Use o menu para salvar/imprimir.', 'success');
-        } else {
-            // Se window.open for bloqueado, tentar navegar na mesma aba
-            window.location.href = dataUrl;
-            mostrarStatus('PDF gerado. Verifique o navegador para salvar.', 'success');
-        }
-    } catch (e) {
-        console.error('Erro ao abrir PDF:', e);
-        // Último recurso: tentar download direto
-        const a = document.createElement('a');
-        a.href = dataUrl;
-        a.download = nomeArquivo;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        mostrarStatus('PDF gerado. Verifique a pasta Downloads.', 'success');
-    }
-}
-
-function baixarPDF(blob, nomeArquivo) {
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = nomeArquivo;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-}
+// Funções removidas: salvarPDF, abrirPDFNoNavegador, baixarPDF
+// O PDF agora é aberto diretamente via window.open para o usuário imprimir/compartilhar
 
 function limparForm() {
     const inputs = document.querySelectorAll('input, textarea');
